@@ -142,6 +142,18 @@
     .search-top button { color: var(--muted); background: transparent; }
     .search-results { display: grid; gap: 4px; margin-top: 18px; }
     .search-result { padding: 11px; border-radius: 6px; font-size: 12px; background: #f0ebe4; }
+    .auth-screen { display: none; position: fixed; inset: 0; z-index: 20; place-items: center; padding: 20px; background: rgba(40,37,34,.42); }
+    .auth-screen.open { display: grid; }
+    .auth-card { width: min(100%, 390px); padding: 28px; border: 1px solid var(--line); background: var(--panel); box-shadow: 0 24px 70px rgba(40,37,34,.2); }
+    .auth-brand { display: flex; align-items: center; gap: 9px; margin-bottom: 22px; font-weight: 800; font-size: 19px; }
+    .auth-card h2 { font-size: 24px; }
+    .auth-card p { margin: 8px 0 20px; color: var(--muted); font-size: 12px; line-height: 1.5; }
+    .auth-card label { display: block; margin: 13px 0 6px; color: var(--muted); font: 11px 'DM Mono', monospace; }
+    .auth-card input { width: 100%; padding: 11px 0; border: 0; border-bottom: 1px solid var(--line); outline: 0; color: var(--ink); background: transparent; }
+    .auth-card input:focus { border-color: var(--coral); }
+    .auth-card button[type="submit"] { width: 100%; margin-top: 22px; padding: 12px; border-radius: 6px; color: white; background: var(--coral); font-size: 12px; font-weight: 700; }
+    .auth-error { min-height: 16px; margin: 10px 0 0 !important; color: var(--coral-dark) !important; }
+    .profile-button { width: 100%; color: inherit; background: transparent; text-align: left; }
     @keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
     @media (max-width: 800px) {
       .app { display: block; padding-bottom: 72px; }
@@ -180,13 +192,13 @@
       </nav>
       <div class="sidebar-bottom">
         <button class="nav"><span style="display:flex;align-items:center;gap:12px;padding:11px 12px;color:var(--muted);font-size:13px"><i data-lucide="settings" style="width:17px"></i> Preferências</span></button>
-        <div class="profile"><div class="avatar">AM</div><div><strong>Juliano Ferreiro</strong><span>Plano essencial</span></div></div>
+        <button class="profile-button" id="logout-button"><div class="profile"><div class="avatar" data-user-initials>AM</div><div><strong data-user-name>Seu nome</strong><span data-user-email>Plano essencial</span></div></div></button>
       </div>
     </aside>
     <main>
       <header class="topbar">
-        <div><p class="eyebrow">terça-feira, 21 de setembro</p><h1>Olá, Juliano.</h1><p class="date">Um passo de cada vez já é movimento.</p></div>
-        <div class="top-actions"><button class="icon-btn" id="search-button" title="Pesquisar"><i data-lucide="search"></i></button><button class="icon-btn" title="Notificações"><i data-lucide="bell"></i></button><div class="avatar">AM</div></div>
+        <div><p class="eyebrow">terça-feira, 21 de setembro</p><h1>Olá, <span data-user-name>seu nome</span>.</h1><p class="date">Um passo de cada vez já é movimento.</p></div>
+        <div class="top-actions"><button class="icon-btn" id="search-button" title="Pesquisar"><i data-lucide="search"></i></button><button class="icon-btn" title="Notificações"><i data-lucide="bell"></i></button><div class="avatar" data-user-initials>AM</div></div>
       </header>
       <div class="content-grid view active" id="view-hoje">
         <section>
@@ -215,6 +227,7 @@
   </div>
   <nav class="mobile-nav"><button class="active" data-view="hoje"><i data-lucide="layout-dashboard"></i>Hoje</button><button data-view="calendario"><i data-lucide="calendar-days"></i>Agenda</button><button data-view="tarefas"><i data-lucide="check-square-2"></i>Tarefas</button><button data-view="progresso"><i data-lucide="bar-chart-3"></i>Progresso</button></nav>
   <div class="search-panel" id="search-panel"><div class="search-box"><div class="search-top"><i data-lucide="search"></i><input id="search-input" placeholder="Pesquisar tarefas..." autocomplete="off"><button id="close-search" aria-label="Fechar pesquisa">×</button></div><div class="search-results" id="search-results"><div class="search-result">Digite para encontrar uma tarefa.</div></div></div></div>
+  <div class="auth-screen" id="auth-screen"><form class="auth-card" id="auth-form"><div class="auth-brand"><span class="brand-mark"><i data-lucide="sun"></i></span> ritmo</div><h2 id="auth-title">Vamos começar.</h2><p id="auth-description">Crie seu perfil para personalizar seu espaço.</p><label id="auth-name-label" for="auth-name">Seu nome</label><input id="auth-name" autocomplete="name" required><label for="auth-email">E-mail</label><input id="auth-email" type="email" autocomplete="email" required><label for="auth-password">Senha</label><input id="auth-password" type="password" autocomplete="new-password" minlength="4" required><p class="auth-error" id="auth-error"></p><button type="submit" id="auth-submit">Entrar no Ritmo</button></form></div>
   <div class="toast" id="toast"></div>
 
 
@@ -230,6 +243,61 @@
     const filters = document.querySelectorAll('.filter');
     let toastTimer;
     function showToast(message) { toast.textContent = message; toast.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => toast.classList.remove('show'), 2200); }
+    const authScreen = document.getElementById('auth-screen');
+    const authForm = document.getElementById('auth-form');
+    const authName = document.getElementById('auth-name');
+    const authEmail = document.getElementById('auth-email');
+    const authPassword = document.getElementById('auth-password');
+    const authError = document.getElementById('auth-error');
+    const authTitle = document.getElementById('auth-title');
+    const authDescription = document.getElementById('auth-description');
+    const authSubmit = document.getElementById('auth-submit');
+    const authNameLabel = document.getElementById('auth-name-label');
+    const accountStorageKey = 'ritmo-account';
+    const sessionStorageKey = 'ritmo-session';
+    async function hashPassword(password) {
+      if (!window.crypto?.subtle) return btoa(unescape(encodeURIComponent(password)));
+      const data = new TextEncoder().encode(password);
+      const hash = await crypto.subtle.digest('SHA-256', data);
+      return [...new Uint8Array(hash)].map(byte => byte.toString(16).padStart(2, '0')).join('');
+    }
+    function updateUserInterface(user) {
+      const firstName = user.name.trim().split(/\s+/)[0];
+      const initials = user.name.trim().split(/\s+/).slice(0, 2).map(name => name[0]).join('').toUpperCase();
+      document.querySelectorAll('[data-user-name]').forEach(element => element.textContent = element.tagName === 'STRONG' ? user.name : firstName);
+      document.querySelectorAll('[data-user-email]').forEach(element => element.textContent = user.email);
+      document.querySelectorAll('[data-user-initials]').forEach(element => element.textContent = initials);
+    }
+    function openAuth(hasAccount = false) {
+      authTitle.textContent = hasAccount ? 'Que bom ter você de volta.' : 'Vamos começar.';
+      authDescription.textContent = hasAccount ? 'Entre para continuar no seu espaço.' : 'Crie seu perfil para personalizar seu espaço.';
+      authNameLabel.hidden = hasAccount; authName.hidden = hasAccount; authName.required = !hasAccount;
+      authSubmit.textContent = hasAccount ? 'Entrar no Ritmo' : 'Criar meu perfil';
+      authScreen.classList.add('open');
+      (hasAccount ? authEmail : authName).focus();
+    }
+    let savedAccount = JSON.parse(localStorage.getItem(accountStorageKey) || localStorage.getItem('ritmo-user') || 'null');
+    if (savedAccount && !localStorage.getItem(accountStorageKey)) localStorage.setItem(accountStorageKey, JSON.stringify(savedAccount));
+    if (savedAccount && localStorage.getItem(sessionStorageKey) === 'active') updateUserInterface(savedAccount); else openAuth(Boolean(savedAccount));
+    authForm.addEventListener('submit', async event => {
+      event.preventDefault();
+      const name = authName.value.trim();
+      const email = authEmail.value.trim().toLowerCase();
+      if ((!name && !savedAccount) || !email || !authPassword.value) return;
+      const passwordHash = await hashPassword(authPassword.value);
+      if (savedAccount) {
+        if (email !== savedAccount.email || passwordHash !== savedAccount.passwordHash) { authError.textContent = 'E-mail ou senha incorretos.'; return; }
+      } else {
+        savedAccount = { name, email, passwordHash };
+        localStorage.setItem(accountStorageKey, JSON.stringify(savedAccount));
+      }
+      localStorage.setItem(sessionStorageKey, 'active');
+      updateUserInterface(savedAccount); authScreen.classList.remove('open'); authForm.reset(); authError.textContent = '';
+      showToast(`Bem-vindo, ${savedAccount.name.split(/\s+/)[0]}!`);
+    });
+    document.getElementById('logout-button').addEventListener('click', () => {
+      localStorage.removeItem(sessionStorageKey); authForm.reset(); authError.textContent = ''; openAuth(true); showToast('Você saiu do seu perfil.');
+    });
     function updateCounts() {
       const tasks = [...document.querySelectorAll('.task')];
       document.querySelector('[data-count="all"]').textContent = tasks.length;
