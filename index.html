@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f1eb">
+  <title>Ritmo — seu dia, no seu tempo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    :root {
+      --paper: #f5f1eb;
+      --ink: #282522;
+      --muted: #817b73;
+      --line: #ded7ce;
+      --panel: #fbf9f5;
+      --coral: #dc5c43;
+      --coral-dark: #b94732;
+      --yellow: #f4c96b;
+      --sage: #b9c7ae;
+      --shadow: 0 16px 40px rgba(48, 38, 28, .07);
+    }
+    * { box-sizing: border-box; }
+    html { background: var(--paper); }
+    body { margin: 0; color: var(--ink); background: var(--paper); font-family: Manrope, sans-serif; }
+    button, input { font: inherit; }
+    button { border: 0; cursor: pointer; }
+    .app { display: grid; grid-template-columns: 220px minmax(0, 1fr); min-height: 100vh; }
+    .sidebar { display: flex; flex-direction: column; border-right: 1px solid var(--line); padding: 28px 18px 22px; }
+    .brand { display: flex; align-items: center; gap: 10px; margin: 0 12px 58px; font-weight: 800; letter-spacing: -.04em; font-size: 21px; }
+    .brand-mark { width: 28px; height: 28px; border-radius: 9px 9px 9px 2px; background: var(--coral); display: grid; place-items: center; color: white; }
+    .brand-mark i { width: 14px; height: 14px; }
+    .nav-label { margin: 0 12px 12px; text-transform: uppercase; letter-spacing: .13em; font: 500 10px 'DM Mono', monospace; color: var(--muted); }
+    .nav { display: grid; gap: 5px; }
+    .nav button { display: flex; align-items: center; gap: 12px; padding: 11px 12px; border-radius: 10px; color: var(--muted); background: transparent; text-align: left; font-size: 13px; transition: .2s ease; }
+    .nav button:hover, .nav button.active { color: var(--ink); background: #eae4dc; }
+    .nav button.active { font-weight: 700; }
+    .nav svg { width: 17px; height: 17px; stroke-width: 1.8; }
+    .sidebar-bottom { margin-top: auto; border-top: 1px solid var(--line); padding-top: 20px; }
+    .profile { display: flex; align-items: center; gap: 10px; padding: 10px 12px; }
+    .avatar { width: 32px; height: 32px; display: grid; place-items: center; background: var(--yellow); border-radius: 50%; font-weight: 800; font-size: 12px; }
+    .profile strong { display: block; font-size: 12px; }
+    .profile span { display: block; color: var(--muted); font-size: 11px; margin-top: 2px; }
+    main { max-width: 1440px; width: 100%; margin: 0 auto; padding: 34px 46px 60px; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 46px; }
+    .eyebrow { margin: 0 0 8px; color: var(--coral-dark); font: 500 11px 'DM Mono', monospace; text-transform: uppercase; letter-spacing: .1em; }
+    h1 { margin: 0; font-size: clamp(30px, 4vw, 48px); letter-spacing: -.065em; line-height: 1; }
+    .date { margin: 11px 0 0; color: var(--muted); font-size: 13px; }
+    .top-actions { display: flex; align-items: center; gap: 10px; }
+    .icon-btn { width: 40px; height: 40px; display: grid; place-items: center; border: 1px solid var(--line); color: var(--ink); background: var(--panel); border-radius: 50%; transition: .2s ease; }
+    .icon-btn:hover { border-color: var(--coral); color: var(--coral-dark); transform: translateY(-2px); }
+    .icon-btn svg { width: 17px; }
+    .content-grid { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(280px, .72fr); gap: 26px; align-items: start; }
+    .section-heading { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+    h2 { font-size: 17px; letter-spacing: -.04em; margin: 0; }
+    .section-heading button { display: inline-flex; align-items: center; gap: 6px; color: var(--coral-dark); background: transparent; font-size: 12px; font-weight: 700; }
+    .section-heading svg { width: 15px; }
+    .task-panel, .focus-panel, .note-panel { background: var(--panel); border: 1px solid var(--line); box-shadow: var(--shadow); }
+    .task-panel { padding: 22px; }
+    .task-filters { display: flex; gap: 7px; margin-bottom: 18px; overflow-x: auto; }
+    .filter { padding: 7px 11px; border: 1px solid transparent; border-radius: 99px; background: transparent; color: var(--muted); font-size: 11px; white-space: nowrap; }
+    .filter.active { color: var(--ink); background: #ece7df; border-color: var(--line); font-weight: 700; }
+    .task-list { display: grid; gap: 2px; }
+    .task { display: grid; grid-template-columns: 20px minmax(0,1fr) auto; align-items: center; gap: 12px; padding: 14px 4px; border-bottom: 1px solid #ebe5dd; animation: rise .35s ease both; }
+    .task:last-child { border-bottom: 0; }
+    .check { width: 18px; height: 18px; border: 1.5px solid #aaa29a; background: transparent; border-radius: 5px; display: grid; place-items: center; color: white; transition: .2s; }
+    .check svg { width: 12px; height: 12px; opacity: 0; }
+    .task.done .check { background: var(--coral); border-color: var(--coral); }
+    .task.done .check svg { opacity: 1; }
+    .task.done .task-title { color: var(--muted); text-decoration: line-through; }
+    .task-title { font-size: 13px; font-weight: 600; transition: .2s; }
+    .task-meta { display: flex; gap: 10px; color: var(--muted); font: 11px 'DM Mono', monospace; margin-top: 5px; }
+    .task-meta span:first-child { color: var(--coral-dark); }
+    .task-tag { padding: 5px 8px; color: #716248; background: #f5e8c9; border-radius: 5px; font-size: 10px; }
+    .task-add { display: none; align-items: center; gap: 10px; padding: 14px 4px 2px; }
+    .task-add input { min-width: 0; flex: 1; border: 0; outline: 0; padding: 8px 0; color: var(--ink); background: transparent; font-size: 13px; border-bottom: 1px solid var(--line); }
+    .task-add button { color: white; background: var(--coral); padding: 8px 12px; border-radius: 6px; font-size: 11px; font-weight: 700; }
+    .task-add.show { display: flex; }
+    .right-column { display: grid; gap: 26px; }
+    .focus-panel { padding: 24px; color: #faf7f0; background: var(--ink); border-color: var(--ink); position: relative; overflow: hidden; }
+    .focus-panel:after { content: ''; position: absolute; width: 170px; height: 170px; right: -65px; top: -68px; border: 1px solid rgba(244,201,107,.35); border-radius: 50%; box-shadow: 0 0 0 18px rgba(244,201,107,.05), 0 0 0 36px rgba(244,201,107,.04); }
+    .focus-panel .eyebrow { color: var(--yellow); }
+    .focus-head { display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 1; }
+    .focus-head h2 { color: white; }
+    .focus-head svg { color: var(--yellow); width: 18px; }
+    .timer { margin: 30px 0 22px; font: 500 clamp(48px, 7vw, 66px) 'DM Mono', monospace; letter-spacing: -.09em; position: relative; z-index: 1; }
+    .timer-actions { display: flex; gap: 8px; position: relative; z-index: 1; }
+    .timer-actions button { padding: 10px 15px; border-radius: 6px; font-size: 11px; font-weight: 700; }
+    #timer-toggle { color: var(--ink); background: var(--yellow); }
+    #timer-reset { color: #d6d0c6; background: rgba(255,255,255,.12); }
+    .note-panel { padding: 21px 22px 22px; }
+    .note-panel h2 { margin-bottom: 18px; }
+    .note { display: flex; gap: 13px; align-items: flex-start; }
+    .note-icon { width: 31px; height: 31px; flex: none; display: grid; place-items: center; background: var(--sage); border-radius: 8px; }
+    .note-icon svg { width: 15px; }
+    .note p { margin: 0; font-size: 12px; line-height: 1.55; color: #5e5952; }
+    .note p strong { color: var(--ink); }
+    .week-strip { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin: 30px 0 0; }
+    .day { text-align: center; padding: 10px 5px; color: var(--muted); border: 1px solid transparent; border-radius: 8px; font-size: 11px; }
+    .day b { display: block; margin-top: 5px; color: var(--ink); font-size: 13px; }
+    .day.today { background: var(--coral); color: #fff; box-shadow: 0 8px 18px rgba(220,92,67,.2); }
+    .day.today b { color: #fff; }
+    .day.selected:not(.today) { border-color: var(--coral); color: var(--coral-dark); background: #fff9f2; }
+    .day.selected:not(.today) b { color: var(--coral-dark); }
+    .day:not(.today):hover { border-color: var(--line); background: var(--panel); }
+    .mobile-nav { display: none; }
+    .toast { position: fixed; bottom: 24px; left: 50%; transform: translate(-50%, 20px); opacity: 0; background: var(--ink); color: white; padding: 11px 16px; border-radius: 6px; font-size: 12px; pointer-events: none; transition: .25s; z-index: 5; }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+    @keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+    @media (max-width: 800px) {
+      .app { display: block; padding-bottom: 72px; }
+      .sidebar { display: none; }
+      main { padding: 24px 18px 34px; }
+      .topbar { margin-bottom: 32px; align-items: flex-start; }
+      .top-actions .icon-btn:first-child { display: none; }
+      .content-grid { grid-template-columns: 1fr; gap: 24px; }
+      .right-column { grid-template-columns: 1fr; gap: 18px; }
+      .focus-panel { order: -1; }
+      .week-strip { margin-top: 24px; gap: 3px; }
+      .mobile-nav { display: flex; position: fixed; left: 12px; right: 12px; bottom: 12px; z-index: 4; padding: 8px; justify-content: space-around; background: rgba(40,37,34,.96); box-shadow: 0 10px 28px rgba(40,37,34,.22); border-radius: 14px; }
+      .mobile-nav button { display: grid; place-items: center; gap: 3px; padding: 6px 13px; color: #9b958e; background: transparent; font-size: 9px; }
+      .mobile-nav button.active { color: var(--yellow); }
+      .mobile-nav svg { width: 18px; height: 18px; }
+    }
+    @media (min-width: 801px) and (max-width: 1050px) { main { padding-left: 30px; padding-right: 30px; } }
+  </style>
+
+
+
+
+
+
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand"><span class="brand-mark"><i data-lucide="sun"></i></span> ritmo</div>
+      <p class="nav-label">espaço</p>
+      <nav class="nav">
+        <button class="active"><i data-lucide="layout-dashboard"></i> Hoje</button>
+        <button><i data-lucide="calendar-days"></i> Calendário</button>
+        <button><i data-lucide="check-square-2"></i> Tarefas</button>
+        <button><i data-lucide="bar-chart-3"></i> Progresso</button>
+      </nav>
+      <div class="sidebar-bottom">
+        <button class="nav"><span style="display:flex;align-items:center;gap:12px;padding:11px 12px;color:var(--muted);font-size:13px"><i data-lucide="settings" style="width:17px"></i> Preferências</span></button>
+        <div class="profile"><div class="avatar">AM</div><div><strong>Ana Martins</strong><span>Plano essencial</span></div></div>
+      </div>
+    </aside>
+    <main>
+      <header class="topbar">
+        <div><p class="eyebrow">terça-feira, 21 de setembro</p><h1>Olá, Ana.</h1><p class="date">Um passo de cada vez já é movimento.</p></div>
+        <div class="top-actions"><button class="icon-btn" title="Pesquisar"><i data-lucide="search"></i></button><button class="icon-btn" title="Notificações"><i data-lucide="bell"></i></button><div class="avatar">AM</div></div>
+      </header>
+      <div class="content-grid">
+        <section>
+          <div class="section-heading"><h2>Seu plano de hoje</h2><button id="add-task"><i data-lucide="plus"></i> nova tarefa</button></div>
+          <div class="task-panel">
+            <div class="task-filters"><button class="filter active" data-filter="all">Tudo <span data-count="all">4</span></button><button class="filter" data-filter="open">Em aberto <span data-count="open">3</span></button><button class="filter" data-filter="done">Concluídas <span data-count="done">1</span></button></div>
+            <div class="task-list" id="task-list">
+              <article class="task" data-state="open"><button class="check" aria-label="Concluir tarefa"><i data-lucide="check"></i></button><div><div class="task-title">Revisar apresentação do projeto</div><div class="task-meta"><span>09:00</span><span>Trabalho</span></div></div><span class="task-tag">importante</span></article>
+              <article class="task" data-state="open"><button class="check" aria-label="Concluir tarefa"><i data-lucide="check"></i></button><div><div class="task-title">Caminhar por 30 minutos</div><div class="task-meta"><span>12:30</span><span>Bem-estar</span></div></div></article>
+              <article class="task done" data-state="done"><button class="check" aria-label="Reabrir tarefa"><i data-lucide="check"></i></button><div><div class="task-title">Responder e-mails pendentes</div><div class="task-meta"><span>14:00</span><span>Trabalho</span></div></div></article>
+              <article class="task" data-state="open"><button class="check" aria-label="Concluir tarefa"><i data-lucide="check"></i></button><div><div class="task-title">Separar ideias para o fim de semana</div><div class="task-meta"><span>18:00</span><span>Pessoal</span></div></div></article>
+            </div>
+            <form class="task-add" id="task-form"><input id="task-input" placeholder="O que precisa entrar no seu dia?" autocomplete="off"><button type="submit">Adicionar</button></form>
+          </div>
+          <div class="week-strip" aria-label="Dias da semana"><button class="day" data-day="segunda">seg<b>20</b></button><button class="day today selected" data-day="terça">ter<b>21</b></button><button class="day" data-day="quarta">qua<b>22</b></button><button class="day" data-day="quinta">qui<b>23</b></button><button class="day" data-day="sexta">sex<b>24</b></button><button class="day" data-day="sábado">sáb<b>25</b></button><button class="day" data-day="domingo">dom<b>26</b></button></div>
+        </section>
+        <div class="right-column">
+          <section class="focus-panel"><div class="focus-head"><div><p class="eyebrow">sessão de foco</p><h2>Uma coisa por vez.</h2></div><i data-lucide="hourglass"></i></div><div class="timer" id="timer">25:00</div><div class="timer-actions"><button id="timer-toggle">Começar</button><button id="timer-reset">Recomeçar</button></div></section>
+          <section class="note-panel"><h2>Uma pausa para lembrar</h2><div class="note"><div class="note-icon"><i data-lucide="coffee"></i></div><p><strong>Seu ritmo não precisa parecer com o de ninguém.</strong><br>Você já fez o suficiente por hoje quando escolhe continuar com presença.</p></div></section>
+        </div>
+      </div>
+    </main>
+  </div>
+  <nav class="mobile-nav"><button class="active"><i data-lucide="layout-dashboard"></i>Hoje</button><button><i data-lucide="calendar-days"></i>Agenda</button><button><i data-lucide="check-square-2"></i>Tarefas</button><button><i data-lucide="settings"></i>Mais</button></nav>
+  <div class="toast" id="toast"></div>
+
+
+
+
+
+
+
+  <script>
+    lucide.createIcons();
+    const toast = document.getElementById('toast');
+    const taskList = document.getElementById('task-list');
+    const filters = document.querySelectorAll('.filter');
+    let toastTimer;
+    function showToast(message) { toast.textContent = message; toast.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => toast.classList.remove('show'), 2200); }
+    function updateCounts() {
+      const tasks = [...document.querySelectorAll('.task')];
+      document.querySelector('[data-count="all"]').textContent = tasks.length;
+      document.querySelector('[data-count="open"]').textContent = tasks.filter(task => task.dataset.state === 'open').length;
+      document.querySelector('[data-count="done"]').textContent = tasks.filter(task => task.dataset.state === 'done').length;
+    }
+    function applyFilter(filter) {
+      document.querySelectorAll('.task').forEach(task => { task.style.display = filter === 'all' || task.dataset.state === filter ? 'grid' : 'none'; });
+      updateCounts();
+    }
+    taskList.addEventListener('click', event => {
+      const check = event.target.closest('.check');
+      if (!check) return;
+      const task = check.closest('.task');
+      task.classList.toggle('done');
+      task.dataset.state = task.classList.contains('done') ? 'done' : 'open';
+      check.setAttribute('aria-label', task.classList.contains('done') ? 'Reabrir tarefa' : 'Concluir tarefa');
+      applyFilter(document.querySelector('.filter.active').dataset.filter);
+      showToast(task.classList.contains('done') ? 'Tarefa concluída.' : 'Tarefa reaberta.');
+    });
+    const addButton = document.getElementById('add-task');
+    const form = document.getElementById('task-form');
+    const input = document.getElementById('task-input');
+    addButton.addEventListener('click', () => { form.classList.toggle('show'); if (form.classList.contains('show')) input.focus(); });
+    form.addEventListener('submit', event => {
+      event.preventDefault(); const title = input.value.trim(); if (!title) return;
+      const task = document.createElement('article'); task.className = 'task'; task.dataset.state = 'open';
+      task.innerHTML = '<button class="check" aria-label="Concluir tarefa"><i data-lucide="check"></i></button><div><div class="task-title"></div><div class="task-meta"><span>agora</span><span>Pessoal</span></div></div>';
+      task.querySelector('.task-title').textContent = title;
+      taskList.appendChild(task); lucide.createIcons(); input.value = ''; form.classList.remove('show');
+      applyFilter(document.querySelector('.filter.active').dataset.filter); showToast('Tarefa adicionada ao seu dia.');
+    });
+    filters.forEach(filter => filter.addEventListener('click', () => { filters.forEach(item => item.classList.remove('active')); filter.classList.add('active'); applyFilter(filter.dataset.filter); }));
+    document.querySelectorAll('.day').forEach(day => day.addEventListener('click', () => {
+      document.querySelectorAll('.day').forEach(item => item.classList.remove('selected'));
+      day.classList.add('selected'); showToast(`Você está vendo ${day.dataset.day}.`);
+    }));
+    updateCounts();
+
+    let seconds = 25 * 60; let timerInterval; const timer = document.getElementById('timer'); const toggle = document.getElementById('timer-toggle');
+    function renderTimer() { timer.textContent = String(Math.floor(seconds / 60)).padStart(2, '0') + ':' + String(seconds % 60).padStart(2, '0'); }
+    toggle.addEventListener('click', () => { if (timerInterval) { clearInterval(timerInterval); timerInterval = null; toggle.textContent = 'Continuar'; } else { timerInterval = setInterval(() => { if (seconds <= 0) { clearInterval(timerInterval); timerInterval = null; toggle.textContent = 'Começar'; showToast('Sessão concluída. Hora de respirar.'); return; } seconds--; renderTimer(); }, 1000); toggle.textContent = 'Pausar'; } });
+    document.getElementById('timer-reset').addEventListener('click', () => { clearInterval(timerInterval); timerInterval = null; seconds = 25 * 60; renderTimer(); toggle.textContent = 'Começar'; });
+    document.querySelectorAll('.nav button, .mobile-nav button').forEach(button => button.addEventListener('click', () => { const group = button.closest('nav'); group.querySelectorAll('button').forEach(item => item.classList.remove('active')); button.classList.add('active'); if (button.textContent.trim() !== 'Hoje') showToast('Esta área está pronta para a próxima etapa.'); }));
+  </script>
+</body>
+</html>
